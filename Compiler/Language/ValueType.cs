@@ -1,7 +1,7 @@
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
-using System.Text.Encodings.Web;
+using System.Numerics;
 using Compiler.Tokenizador;
 
 namespace Compiler.Language;
@@ -11,8 +11,7 @@ public class ValueType(TokenType kind, object value)
     public TokenType Kind { get; } = kind;
     public object Value { get; } = value;
 
-    // TODO: implemetar todos los operadores
-    #region Sum,Mult y Pow
+    #region Arithmetics
     public static ValueType operator +(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
@@ -28,16 +27,14 @@ public class ValueType(TokenType kind, object value)
 
         return new ValueType(TokenType.Num, (int)a.Value * (int)b.Value);
     }
-    //duda, no me deja poner el operador **
+
     public static ValueType Pow(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
         return new ValueType(TokenType.Num, Math.Pow((int)a.Value, (int)b.Value));
     }
-    #endregion
 
-    #region Division
     public static ValueType operator /(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
@@ -55,18 +52,18 @@ public class ValueType(TokenType kind, object value)
             throw new DivideByZeroException();
         return new ValueType(TokenType.Num, (int)a.Value % (int)b.Value);
     }
-    #endregion
 
-    #region Resta
+
     public static ValueType operator -(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
         return new ValueType(TokenType.Num, (int)a.Value - (int)b.Value);
     }
+
     #endregion
 
-    #region Booleanos y Comparadores 
+    #region Boolean
     public static ValueType operator !(ValueType a)
     {
         if (a.Kind != TokenType.Boolean)
@@ -87,36 +84,36 @@ public class ValueType(TokenType kind, object value)
             throw new InvalidOperationException("Unsupported operation for the given types");
         return new ValueType(TokenType.Boolean, a.Value != b.Value);
     }
-    
+
     public static ValueType operator >(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
-        return new ValueType(TokenType.Boolean, ((IComparable)a.Value).CompareTo(b.Value) > 0);
+        return new ValueType(a.Kind, (int)a.Value > (int)b.Value);
     }
 
     public static ValueType operator <(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
-        return new ValueType(TokenType.Boolean, ((IComparable)a.Value).CompareTo(b.Value) < 0);
+        return new ValueType(a.Kind, (int)a.Value < (int)b.Value);
     }
 
     public static ValueType operator >=(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
-        return new ValueType(TokenType.Boolean, ((IComparable)a.Value).CompareTo(b.Value) >= 0);
+        return new ValueType(a.Kind, (int)a.Value >= (int)b.Value);
     }
 
     public static ValueType operator <=(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
-        return new ValueType(TokenType.Boolean, ((IComparable)a.Value).CompareTo(b.Value) <= 0);
+        return new ValueType(a.Kind, (int)a.Value <= (int)b.Value);
     }
     #endregion
-
+    // se usa para los botones
     public static ValueType Parse(string s, TokenType type)
     {
         return type switch
@@ -143,4 +140,9 @@ public class ValueType(TokenType kind, object value)
         result = new ValueType(type, value);
         return true;
     }
+
+    public override bool Equals(object? obj)
+        => ReferenceEquals(obj, this) || (obj is not null && obj is ValueType that && that.Value == Value);
+
+    public override int GetHashCode() => Value.GetHashCode();
 }

@@ -1,9 +1,10 @@
 using System.Runtime;
+using Compiler.Language;
 using ValueType = Compiler.Language.ValueType;
 
 namespace Compiler.Model;
 
-public class Context
+public class Context(IContextCallable? callable = null) : IContextCallable
 {
     public Dictionary<string, ValueType> Variables { get; protected set; } = [];
     public Dictionary<string, int> Labels { get; protected set; } = [];
@@ -23,4 +24,23 @@ public class Context
         Target = null;
         Jump = false;
     }
+
+    public ValueType CallFunction(string name, ValueType[] paramValues)
+        => callable?.CallFunction(name, paramValues) ??
+        throw new NotImplementedException();
+
+    public void ExecuteAction(string name, ValueType[] paramValues)
+        => callable?.ExecuteAction(name, paramValues);
+
+    public bool CheckParams(string name, ValueType[] paramValues)
+        => callable?.CheckParams(name,paramValues) ??
+        throw new NotImplementedException();
+}
+
+public interface IContextCallable
+{
+    ValueType CallFunction(string name, ValueType[] paramValues);
+    void ExecuteAction(string name, ValueType[] paramValues);
+    //TODO: Considerar hacer 2 metodos para analizar si los parametros son correctos (esto es para el chequeo semantico), listo, donde los implemento ?
+    bool CheckParams(string name, ValueType[] paramValues);
 }

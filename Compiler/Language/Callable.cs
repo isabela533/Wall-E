@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using Compiler.Interface;
 using Compiler.Model;
 
@@ -10,7 +11,8 @@ public class CallableFunc(string name, IExpression[] parameters) : IInstruction,
 
     public ValueType Accept(Context context)
     {
-        throw new NotImplementedException();
+        ValueType[] paramValues = [.. Params.Select(x => x.Accept(context))];
+        return context.CallFunction(Name, paramValues);
     }
 
     void IInstruction.Accept(Context context) => Accept(context);
@@ -23,7 +25,8 @@ public class CallableAction(string name, IExpression[] parameters) : IInstructio
 
     public void Accept(Context context)
     {
-        throw new NotImplementedException();
+        ValueType[] paramValues = [.. Params.Select(x => x.Accept(context))];
+        context.ExecuteAction(Name, paramValues);
     }
 
 }

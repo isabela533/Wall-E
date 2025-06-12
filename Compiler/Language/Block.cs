@@ -1,5 +1,7 @@
+using System.Reflection.Emit;
 using Compiler.Interface;
 using Compiler.Model;
+using Compiler.Tokenizador;
 
 namespace Compiler.Language;
 
@@ -9,7 +11,7 @@ internal class BlockExpression(List<IInstruction> lines) : IInstruction
 
     public void Accept(Context context)
     {
-        // TODO: Hacer un método que ejecute solo los labels, de esta forma el goto puede ver un label que este posterior a el.
+        EjectutarLabel(context);
         for (int i = 0; i < Lines.Count; i++)
         {
             Lines[i].Accept(context);
@@ -18,6 +20,15 @@ internal class BlockExpression(List<IInstruction> lines) : IInstruction
                 i = context.Index;
                 context.ResetJump();
             }
+        }
+    }
+
+    private void EjectutarLabel(Context context)
+    {
+        foreach(var line in Lines)
+        {
+            if (line is LabelInstruction label)
+                label.Accept(context);
         }
     }
 }

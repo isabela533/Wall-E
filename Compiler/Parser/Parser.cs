@@ -1,4 +1,5 @@
 using System.Data;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Reflection.Metadata.Ecma335;
 using Compiler.Enum;
@@ -20,7 +21,7 @@ public class Parser
         tokenIndex = 0;
         if (!GetBlock(tokens, out IInstruction block))
             throw new Exception();
-        if (tokens[tokenIndex].Type != TokenType.EndOfFile)
+        if (!MatchToken(tokens, TokenType.EndOfFile))
             throw new Exception();
         return block;
     }
@@ -33,7 +34,7 @@ public class Parser
         {
             if (move = GetAssign(tokens, out IInstruction? line))
                 lines.Add(line!);
-            else if (move = GetCallable(tokens, out line))
+            else if (move = GetCallableAction(tokens, out line))
                 lines.Add(line!);
             else if (move = GetGoTo(tokens, out line))
                 lines.Add(line!);
@@ -52,17 +53,17 @@ public class Parser
     private bool GetGoTo(Token[] tokens, out IInstruction? line)
     {
         var startIndex = tokenIndex;
-        if (tokens[tokenIndex++].Type != TokenType.GoTo
-            || tokens[tokenIndex++].Type != TokenType.CorcheteIzquierdo
-            || tokens[tokenIndex++].Type != TokenType.Identificador
+        if (!MatchToken(tokens, TokenType.GoTo)
+            || !MatchToken(tokens, TokenType.CorcheteIzquierdo)
+            || !MatchToken(tokens, TokenType.Identificador)
         )
             return ResetExp(startIndex, out line);
 
         var name = tokens[tokenIndex - 1].Value;
-        if (tokens[tokenIndex++].Type != TokenType.CorcheteDerecho
-            || tokens[tokenIndex++].Type != TokenType.ParentesisIzquierdo
+        if (!MatchToken(tokens, TokenType.CorcheteDerecho)
+            || !MatchToken(tokens, TokenType.ParentesisIzquierdo)
             || !GetBoolExpression(tokens, out IExpression? cond)
-            || tokens[tokenIndex++].Type != TokenType.ParentesisDerecho)
+            || !MatchToken(tokens, TokenType.ParentesisDerecho))
             return ResetExp(startIndex, out line);
 
         var nodo = new GotoInstruction(name, cond!);
@@ -72,7 +73,7 @@ public class Parser
     private bool GetLabel(Token[] tokens, out IInstruction? line)
     {
         var startIndex = tokenIndex;
-        if (tokens[tokenIndex++].Type != TokenType.Label)
+        if (!MatchToken(tokens, TokenType.Label))
             return ResetExp(startIndex, out line);
         var token = tokens[tokenIndex - 1];
         var node = new LabelInstruction(token.Value, token.Row);
@@ -83,10 +84,10 @@ public class Parser
     {
         var startIndex = tokenIndex;
         var name = tokens[tokenIndex].Value;
-        if (tokens[tokenIndex++].Type != TokenType.Identificador)
+        if (!MatchToken(tokens, TokenType.Identificador))
             return ResetExp(startIndex, out line);
 
-        if (tokens[tokenIndex++].Type != TokenType.Assign)
+        if (!MatchToken(tokens, TokenType.Assign))
             return ResetExp(startIndex, out line);
 
         if (!GetExpression(tokens, out IExpression? value))
@@ -104,15 +105,15 @@ public class Parser
         return ResetExp(startIndex, out value);
     }
 
-    private bool GetCallable(Token[] tokens, out IInstruction? line)
+    private bool GetCallableAction(Token[] tokens, out IInstruction? line)
     {
         var startIndex = tokenIndex;
         var name = tokens[tokenIndex].Value;
 
-        if (tokens[tokenIndex++].Type != TokenType.Identificador)
+        if (!MatchToken(tokens, TokenType.Identificador))
             return ResetExp(startIndex, out line);
 
-        if (tokens[tokenIndex++].Type != TokenType.ParentesisIzquierdo)
+        if (!MatchToken(tokens, TokenType.ParentesisIzquierdo))
             return ResetExp(startIndex, out line);
 
         if (!GetParams(tokens, out IExpression[]? @params))
@@ -120,18 +121,35 @@ public class Parser
 
         var newNode = new CallableAction(name, @params!);
         return SetExp(newNode, out line);
+    }
 
+    private bool GetCallableFunc(Token[] tokens, out IExpression? exp)
+    {
+        var startIndex = tokenIndex;
+        var name = tokens[tokenIndex].Value;
+
+        if (!MatchToken(tokens, TokenType.Identificador))
+            return ResetExp(startIndex, out exp);
+
+        if (!MatchToken(tokens, TokenType.ParentesisIzquierdo))
+            return ResetExp(startIndex, out exp);
+
+        if (!GetParams(tokens, out IExpression[]? @params))
+            return ResetExp(startIndex, out exp);
+
+        var newNode = new CallableFunc(name, @params!);
+        return SetExp(newNode, out exp);
     }
 
     private bool GetParams(Token[] tokens, out IExpression[]? @params)
     {
         var startIndex = tokenIndex;
-        List<IExpression> parameters = new List<IExpression> { };
-        if (tokens[tokenIndex].Type != TokenType.ParentesisDerecho && GetExpression(tokens, out IExpression? value))
+        List<IExpression> parameters = [];
+        if (!MatchToken(tokens, TokenType.ParentesisDerecho) && GetExpression(tokens, out IExpression? value))
             parameters.Add(value!);
-        while (tokens[tokenIndex].Type != TokenType.ParentesisDerecho)
+        while (!MatchToken(tokens, TokenType.ParentesisDerecho))
         {
-            if (tokens[tokenIndex++].Type != TokenType.Coma || !GetExpression(tokens, out value))
+            if (!MatchToken(tokens, TokenType.Coma) || !GetExpression(tokens, out value))
                 return ResetExp(startIndex, out @params);
             parameters.Add(value!);
         }
@@ -156,18 +174,27 @@ public class Parser
 
     #endregion
 
-    #region Boolean
+    #region Boolean 
 
     private bool GetBoolExpression(Token[] tokens, out IExpression? cond)
+        // => GetComparisonExpression(tokens, out cond);
         => GetOrExpression(tokens, out cond);
     private bool GetOrExpression(Token[] tokens, out IExpression? cond)
         => ParseExpression(tokens, out cond, GetAndExpression, [TokenType.Or]);
     private bool GetAndExpression(Token[] tokens, out IExpression? cond)
-        => ParseExpression(tokens, out cond, GetBoolLiteral, [TokenType.And]);
+        => ParseExpression(tokens, out cond, GetComparisonExpression, [TokenType.And]);
     private bool GetBoolLiteral(Token[] tokens, out IExpression? cond)
-        => GetLiteralExp(tokens, out cond, GetBoolExpression, TokenType.Boolean);
+        => ParseExpression(tokens, out cond, GetBoolLiteral, [TokenType.And]);
 
-    // TODO: Implemetar los comparadores, no son ni shift ni reduce porque no se pueden concatenar (sugerencia usar enum en vez de bool)
+
+
+    // Implemetar los comparadores, son reduce porque compara primero y lo convierte a booleano : listo, revisar bien
+
+    #endregion
+
+    #region Comparadores
+    private bool GetComparisonExpression(Token[] tokens, out IExpression? cond)
+    => ParseExpression(tokens, out cond, GetNumExpression, [TokenType.Mayor, TokenType.Menor, TokenType.MayorIgual, TokenType.MenorIgual, TokenType.Igual, TokenType.Diferente]);
 
     #endregion
 
@@ -216,12 +243,8 @@ public class Parser
     {
         foreach (var item in types)
         {
-            if (tokens[tokenIndex].Type == item)
-            {
-                tokenIndex++;
-                type = item;
-                return true;
-            }
+            if (MatchToken(tokens, item))
+                return SetExp(item, out type);
         }
         return ResetExp(tokenIndex, out type);
     }
@@ -237,13 +260,13 @@ public class Parser
                 ? SetExp(value!, out exp)
                 : throw new InvalidExpressionException();
         }
+        if (GetCallableFunc(tokens, out IExpression? func))
+            return SetExp(func!, out exp);
         if (MatchToken(tokens, TokenType.Identificador))
             return SetExp(new Variable(token.Value), out exp);
-        // TODO: Metodos que devuelven algo
         throw new InvalidExpressionException();
     }
 
-    // TODO: Cambiar todos los comparadores de type por este metodo
     private bool MatchToken(Token[] tokens, TokenType type)
     {
         if (tokens[tokenIndex].Type != type)

@@ -6,5 +6,11 @@ public enum BinaryType
     Multiplication,
     Potencia,
     Diferencia,
-    Division
+    Division,
+    MenorQue,
+    MayorQue,
+    MenorIgual,
+    MayorIgual,
+    Igual,
+    Distinto
 }

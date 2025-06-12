@@ -9,16 +9,15 @@ public class BinaryExpression(IExpression left, IExpression right, BinaryType ty
     public IExpression Left => left;
     public IExpression Right => right;
     public BinaryType Type => type;
-
     public ValueType Accept(Context context)
     {
         return type switch
         {
             BinaryType.Addition => left.Accept(context) + right.Accept(context),
             BinaryType.Diferencia => left.Accept(context) - right.Accept(context),
-            BinaryType.Multiplication => throw new NotImplementedException(),
-            BinaryType.Potencia => throw new NotImplementedException(),
-            BinaryType.Division => throw new NotImplementedException(),
+            BinaryType.Multiplication => left.Accept(context) * right.Accept(context),
+            BinaryType.Potencia => ValueType.Pow(left.Accept(context), right.Accept(context)),
+            BinaryType.Division => left.Accept(context) / right.Accept(context),
             _ => throw new InvalidOperationException(),
         };
     }

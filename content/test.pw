@@ -1,0 +1,4 @@
+a <-5 - 4 - 1
+LOOP
+a <- a + 1
+GoTo [LOOP] (true)

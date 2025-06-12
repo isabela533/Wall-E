@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace Compiler.Tokenizador;
 
+// TODO: Hacer clase no estatica y añadir lista de errores
 public static class Tokenizador
 {
     #region Patterns

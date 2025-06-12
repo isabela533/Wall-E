@@ -1,3 +1,4 @@
+using Compiler.Extension;
 using Compiler.Interface;
 using Compiler.Model;
 using Compiler.Tokenizador;
@@ -10,8 +11,6 @@ public class Variable(string name) : IExpression
 
     public ValueType Accept(Context context)
     {
-        // TODO: instalar todo tree
-        // TODO: cambiar el kind por uno correcto (hacer metodo extensor a partir del type de value) -> typeof(value)
         return context.Variables[Name];
     }
 }

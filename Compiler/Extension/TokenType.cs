@@ -12,6 +12,12 @@ public static class TokenExtension
         TokenType.Pow => BinaryType.Potencia,
         TokenType.Resta => BinaryType.Diferencia,
         TokenType.Div => BinaryType.Division,
+        TokenType.Menor => BinaryType.MenorQue,
+        TokenType.Mayor => BinaryType.MayorQue,
+        TokenType.MenorIgual => BinaryType.MenorIgual,
+        TokenType.MayorIgual => BinaryType.MayorIgual,
+        TokenType.Igual => BinaryType.Igual,
+        TokenType.Diferente => BinaryType.Distinto,
         _ => throw new Exception(),
     };
 }

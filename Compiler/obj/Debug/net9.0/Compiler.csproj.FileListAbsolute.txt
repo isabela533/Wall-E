@@ -1,0 +1,11 @@
+D:\Wall-E\Compiler\bin\Debug\net9.0\Compiler.deps.json
+D:\Wall-E\Compiler\bin\Debug\net9.0\Compiler.dll
+D:\Wall-E\Compiler\bin\Debug\net9.0\Compiler.pdb
+D:\Wall-E\Compiler\obj\Debug\net9.0\Compiler.GeneratedMSBuildEditorConfig.editorconfig
+D:\Wall-E\Compiler\obj\Debug\net9.0\Compiler.AssemblyInfoInputs.cache
+D:\Wall-E\Compiler\obj\Debug\net9.0\Compiler.AssemblyInfo.cs
+D:\Wall-E\Compiler\obj\Debug\net9.0\Compiler.csproj.CoreCompileInputs.cache
+D:\Wall-E\Compiler\obj\Debug\net9.0\Compiler.dll
+D:\Wall-E\Compiler\obj\Debug\net9.0\refint\Compiler.dll
+D:\Wall-E\Compiler\obj\Debug\net9.0\Compiler.pdb
+D:\Wall-E\Compiler\obj\Debug\net9.0\ref\Compiler.dll

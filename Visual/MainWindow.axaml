@@ -1,0 +1,73 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:AvaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+        xmlns:local="clr-namespace:Wall_E"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+        x:Class="Visual.MainWindow"
+        Title="Visual">
+
+    <Grid Margin="20" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+        RowDefinitions="Auto,*" >
+        
+        <!-- Buttons panel -->
+        <StackPanel Spacing="20" Margin="0 0 0 10" Orientation="Horizontal"
+            Grid.ColumnSpan="3" HorizontalAlignment="Right">
+            <Button Content="Split Editor"  CornerRadius="8" Click="SplitEditor_Click"
+                FontWeight="SemiBold" Foreground="White" Background="LightBlue" Cursor="Hand">
+                <Button.Styles>
+                    <Style Selector="Button:hover">
+                        <Setter Property="Background" Value="#222222"/>
+                    </Style>
+                </Button.Styles>
+            </Button>
+            <Button Content="Run Code"  CornerRadius="8" Click="RunCode_Click"
+                FontWeight="SemiBold" Foreground="White" Background="LightBlue" Cursor="Hand">
+                <Button.Styles>
+                    <Style Selector="Button:hover">
+                        <Setter Property="Background" Value="#222222"/>
+                    </Style>
+                </Button.Styles>
+            </Button>
+            <Button Content="Limpiar Canvas" Click="ClearCanvasClick"  CornerRadius="8"
+                FontWeight="SemiBold" Foreground="White" Background="LightBlue" Cursor="Hand">
+                <Button.Styles>
+                    <Style Selector="Button:hover">
+                        <Setter Property="Background" Value="#222222"/>
+                    </Style>
+                </Button.Styles>
+            </Button>
+            <Label Content="Aumentar Tamaño del Canvas" FontWeight="SemiBold"
+                Foreground="White" Background="LightBlue" CornerRadius="8"
+                BorderThickness="1.25" VerticalContentAlignment="Center"/>
+            <NumericUpDown CornerRadius="8" Increment="1"
+                Minimum="10" Maximum="256" Value="20" Cursor="Hand"
+                BorderThickness="1.25" Foreground="Black"
+                ValueChanged="NumericValueChanged" Loaded="NumericValueChanged"/>
+        </StackPanel>
+
+        <SplitView x:Name="SplitPanel"
+            Grid.Row="1"
+            IsPaneOpen="True"
+            Background="AliceBlue"
+            OpenPaneLength="300"
+            PaneClosed="SplitView_PaneClosed"
+            PaneOpened="SplitView_PaneOpened"
+            PanePlacement="Left">
+            <SplitView.Pane>
+                <AvaloniaEdit:TextEditor x:Name="Editor" ShowLineNumbers="True"
+                    TextChanged="TextChanged"
+                    FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Visible"
+                    FontWeight="Light"
+                    FontSize="14"/>
+            </SplitView.Pane>
+            <SplitView.Content>
+                <Grid x:Name="PixelGrid" Margin="300 0 0 0">
+                </Grid>
+            </SplitView.Content>
+        </SplitView>
+    </Grid>
+</Window>

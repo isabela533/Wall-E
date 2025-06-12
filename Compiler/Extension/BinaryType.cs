@@ -7,7 +7,14 @@ public static class BinaryTypeExtension
     public static bool IsShift(this BinaryType binary) => binary switch
     {
         BinaryType.Addition or BinaryType.Potencia or BinaryType.Multiplication => true,
-        BinaryType.Diferencia or BinaryType.Division => false,
+        BinaryType.Diferencia 
+        or BinaryType.Division 
+        or BinaryType.MenorQue 
+        or BinaryType.MayorQue 
+        or BinaryType.MenorIgual 
+        or BinaryType.MayorIgual 
+        or BinaryType.Igual 
+        or BinaryType.Distinto => false,
         _ => throw new InvalidCastException(),
     };
 }
