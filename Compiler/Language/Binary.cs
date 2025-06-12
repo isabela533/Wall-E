@@ -18,6 +18,7 @@ public class BinaryExpression(IExpression left, IExpression right, BinaryType ty
             BinaryType.Multiplication => left.Accept(context) * right.Accept(context),
             BinaryType.Potencia => ValueType.Pow(left.Accept(context), right.Accept(context)),
             BinaryType.Division => left.Accept(context) / right.Accept(context),
+            BinaryType.Module => left.Accept(context) % right.Accept(context),
             _ => throw new InvalidOperationException(),
         };
     }

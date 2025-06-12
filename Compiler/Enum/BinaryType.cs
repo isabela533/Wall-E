@@ -12,5 +12,6 @@ public enum BinaryType
     MenorIgual,
     MayorIgual,
     Igual,
-    Distinto
+    Distinto,
+    Module
 }

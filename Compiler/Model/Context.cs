@@ -32,8 +32,12 @@ public class Context(IContextCallable? callable = null) : IContextCallable
     public void ExecuteAction(string name, ValueType[] paramValues)
         => callable?.ExecuteAction(name, paramValues);
 
-    public bool CheckParams(string name, ValueType[] paramValues)
-        => callable?.CheckParams(name,paramValues) ??
+    public bool CheckParamsType(string name, ValueType[] paramValues)
+        => callable?.CheckParamsType(name, paramValues) ??
+        throw new NotImplementedException();
+
+    public bool CheckParamsCount(string name, ValueType [] paramValues, out int cantParams)
+        => callable?.CheckParamsCount(name, paramValues, out cantParams) ??
         throw new NotImplementedException();
 }
 
@@ -41,6 +45,7 @@ public interface IContextCallable
 {
     ValueType CallFunction(string name, ValueType[] paramValues);
     void ExecuteAction(string name, ValueType[] paramValues);
-    //TODO: Considerar hacer 2 metodos para analizar si los parametros son correctos (esto es para el chequeo semantico), listo, donde los implemento ?
-    bool CheckParams(string name, ValueType[] paramValues);
+    //TODO: REVISAR Considerar hacer 2 metodos para analizar si los parametros son correctos (esto es para el chequeo semantico), listo
+    bool CheckParamsType(string name, ValueType[] paramValues);
+    bool CheckParamsCount(string name, ValueType[] paramValues, out int cantParams);
 }
