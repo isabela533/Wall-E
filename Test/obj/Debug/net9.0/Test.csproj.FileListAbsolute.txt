@@ -16,3 +16,4 @@ D:\Wall-E\Test\obj\Debug\net9.0\refint\Test.dll
 D:\Wall-E\Test\obj\Debug\net9.0\Test.pdb
 D:\Wall-E\Test\obj\Debug\net9.0\Test.genruntimeconfig.cache
 D:\Wall-E\Test\obj\Debug\net9.0\ref\Test.dll
+D:\Wall-E\Test\obj\Debug\net9.0\Test.sourcelink.json

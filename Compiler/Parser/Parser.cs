@@ -8,7 +8,7 @@ using Compiler.Interface;
 using Compiler.Language;
 using Compiler.Tokenizador;
 using ValueType = Compiler.Language.ValueType;
-
+//TODO: DUDA debo de poner los errores aqui tb? es decir que si puedo agregar errores a la lista de tokenizador 
 namespace Compiler.Parser;
 
 public class Parser
@@ -100,8 +100,12 @@ public class Parser
     private bool GetExpression(Token[] tokens, out IExpression? value)
     {
         int startIndex = tokenIndex;
-        if (GetNumExpression(tokens, out IExpression? num))
-            return SetExp(num, out value);
+        if (GetNumExpression(tokens, out value))
+            return true;
+        if (GetBoolExpression(tokens, out value))
+            return true;
+        if (GetStrExpression(tokens, out value))
+            return true;
         return ResetExp(startIndex, out value);
     }
 
@@ -145,7 +149,7 @@ public class Parser
     {
         var startIndex = tokenIndex;
         List<IExpression> parameters = [];
-        if (!MatchToken(tokens, TokenType.ParentesisDerecho) && GetExpression(tokens, out IExpression? value))
+        if (tokens[tokenIndex].Type != TokenType.ParentesisDerecho && GetExpression(tokens, out IExpression? value))
             parameters.Add(value!);
         while (!MatchToken(tokens, TokenType.ParentesisDerecho))
         {
@@ -177,20 +181,23 @@ public class Parser
     #region Boolean 
 
     private bool GetBoolExpression(Token[] tokens, out IExpression? cond)
-        // => GetComparisonExpression(tokens, out cond);
         => GetOrExpression(tokens, out cond);
     private bool GetOrExpression(Token[] tokens, out IExpression? cond)
         => ParseExpression(tokens, out cond, GetAndExpression, [TokenType.Or]);
     private bool GetAndExpression(Token[] tokens, out IExpression? cond)
-        => ParseExpression(tokens, out cond, GetComparisonExpression, [TokenType.And]);
-    private bool GetBoolLiteral(Token[] tokens, out IExpression? cond)
         => ParseExpression(tokens, out cond, GetBoolLiteral, [TokenType.And]);
-
-
-
+    private bool GetBoolLiteral(Token[] tokens, out IExpression? cond)
+        => GetComparisonExpression(tokens, out cond)
+        || GetLiteralExp(tokens, out cond, GetBoolExpression, TokenType.Boolean);
     // Implemetar los comparadores, son reduce porque compara primero y lo convierte a booleano : listo, revisar bien
 
     #endregion
+
+    private bool GetStrExpression(Token[] tokens, out IExpression? cond)
+        => GetStrLiteral(tokens, out cond);
+
+    private bool GetStrLiteral(Token[] tokens, out IExpression? cond)
+        => GetLiteralExp(tokens, out cond, GetStrExpression, TokenType.String);
 
     #region Comparadores
     private bool GetComparisonExpression(Token[] tokens, out IExpression? cond)
@@ -251,6 +258,7 @@ public class Parser
 
     private bool GetLiteralExp(Token[] tokens, out IExpression? exp, GetExpressionMethod Parse, TokenType type)
     {
+        var startIndex = tokenIndex;
         var token = tokens[tokenIndex];
         if (MatchToken(tokens, type) && ValueType.TryParse(token.Value, type, out ValueType? literal))
             return SetExp(new Literal(literal!), out exp);
@@ -258,13 +266,13 @@ public class Parser
         {
             return Parse(tokens, out IExpression? value) && MatchToken(tokens, TokenType.ParentesisDerecho)
                 ? SetExp(value!, out exp)
-                : throw new InvalidExpressionException();
+                : ResetExp(startIndex, out exp);
         }
         if (GetCallableFunc(tokens, out IExpression? func))
             return SetExp(func!, out exp);
         if (MatchToken(tokens, TokenType.Identificador))
             return SetExp(new Variable(token.Value), out exp);
-        throw new InvalidExpressionException();
+        return ResetExp(startIndex, out exp);
     }
 
     private bool MatchToken(Token[] tokens, TokenType type)

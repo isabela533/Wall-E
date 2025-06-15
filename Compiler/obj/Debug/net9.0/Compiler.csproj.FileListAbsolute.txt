@@ -9,3 +9,4 @@ D:\Wall-E\Compiler\obj\Debug\net9.0\Compiler.dll
 D:\Wall-E\Compiler\obj\Debug\net9.0\refint\Compiler.dll
 D:\Wall-E\Compiler\obj\Debug\net9.0\Compiler.pdb
 D:\Wall-E\Compiler\obj\Debug\net9.0\ref\Compiler.dll
+D:\Wall-E\Compiler\obj\Debug\net9.0\Compiler.sourcelink.json

@@ -2,14 +2,15 @@ using System.Text.RegularExpressions;
 
 namespace Compiler.Tokenizador;
 
-// TODO: Hacer clase no estatica y añadir lista de errores
-public static class Tokenizador
+// TODO: REVISAR clase no estatica y añadir lista de errores
+
+public class Tokenizador
 {
     #region Patterns
 
     public static readonly string id = @"[a-zA-Z][a-zA-Z0-9_]*";
     public static readonly string label = $@"{id}\n|{id}\r\n";
-    public static readonly string num = @"\d+,\d+|\d+";
+    public static readonly string num = $@"\d+|^{id}-\d+";
     public static readonly string str = @"""[^""]*""";
     public static readonly string otherOp = @"\*\*";
     public static readonly string comp = @"[<>=\!]=";
@@ -19,12 +20,13 @@ public static class Tokenizador
 
     #endregion
 
+    public List<string> errores = new List<string>();
     public static string GetAllPatterns()
     {
         return string.Join('|', @"[\t ]+", str, label, id, num, assign, otherOp, comp, op, efl);
     }
 
-    public static Token[] Tokenizar(string code)
+    public Token[] Tokenizar(string code)
     {
         var pattern = GetAllPatterns();
         MatchCollection matches = Regex.Matches(code, pattern);
@@ -36,7 +38,10 @@ public static class Tokenizador
         foreach (Match match in matches.Cast<Match>())
         {
             if (match.Index != index)
-                throw new Exception();
+            {
+                errores.Add($"Error processing code: expected a valid token at line {line + 1}, column {characters + 1}. Please check that the code is correctly formatted and that there are no syntax errors.");
+                continue;
+            }
             var value = match.Value;
             var type = GetTokenType(value);
             if (value[0] != ' ')
@@ -115,5 +120,10 @@ public static class Tokenizador
         if (int.TryParse(value, out int _))
             return TokenType.Num;
         return TokenType.Identificador;
+    }
+
+    public List<string> GetErrores()
+    {
+        return errores;
     }
 }

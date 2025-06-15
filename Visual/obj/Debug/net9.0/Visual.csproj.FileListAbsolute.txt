@@ -67,3 +67,4 @@ D:\Wall-E\Visual\obj\Debug\net9.0\ref\Visual.dll
 D:\Wall-E\Visual\bin\Debug\net9.0\AvaloniaEdit.dll
 D:\Wall-E\Visual\bin\Debug\net9.0\Compiler.dll
 D:\Wall-E\Visual\bin\Debug\net9.0\Compiler.pdb
+D:\Wall-E\Visual\obj\Debug\net9.0\Visual.sourcelink.json

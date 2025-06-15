@@ -19,6 +19,12 @@ public class BinaryExpression(IExpression left, IExpression right, BinaryType ty
             BinaryType.Potencia => ValueType.Pow(left.Accept(context), right.Accept(context)),
             BinaryType.Division => left.Accept(context) / right.Accept(context),
             BinaryType.Module => left.Accept(context) % right.Accept(context),
+            BinaryType.Igual => left.Accept(context) == right.Accept(context),
+            BinaryType.Distinto => left.Accept(context) != right.Accept(context),
+            BinaryType.MayorQue => left.Accept(context) > right.Accept(context),
+            BinaryType.MenorQue => left.Accept(context) < right.Accept(context),
+            BinaryType.MayorIgual => left.Accept(context) >= right.Accept(context),
+            BinaryType.MenorIgual => left.Accept(context) <= right.Accept(context),
             _ => throw new InvalidOperationException(),
         };
     }

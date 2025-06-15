@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
+using Avalonia.Media;
 using AvaloniaEdit.Rendering;
 using Compiler.Language;
 using Compiler.Model;
 using Compiler.Tokenizador;
+using Tmds.DBus.Protocol;
 using Visual.Interface;
 using ValueType = Compiler.Language.ValueType;
 
@@ -12,14 +16,14 @@ namespace Visual.Controler;
 public class ControlerMethods(IPaint paint) : IContextCallable
 {
     private readonly IPaint _paint = paint;
-#region Instructions 
+    #region Instructions 
     public void DrawLine(int dirX, int dirY, int distance)
     {
         (int x, int y) = _paint.WallePoss;
         for (int count = 0; count < distance; count++)
         {
             // Mover Walle y actualizar posicion
-            _paint.WallePoss = (x + dirX * count, y + dirY * count);
+            _paint.PaintWalle(x + dirX * count, y + dirY * count);
             _paint.PaintCell(_paint.WallePoss.x, _paint.WallePoss.y);
 
             int size;
@@ -41,24 +45,171 @@ public class ControlerMethods(IPaint paint) : IContextCallable
                 newY = -dirY; // direccion contraria
 
                 // Pintar el resto de la brocha
-                size = int.Min(count, _paint.BrushSize);
+                size = int.Min(count, _paint.BrushSize - 1);
                 DrawStep(newX, 0, size);
                 DrawStep(0, newY, size);
             }
         }
     }
-#endregion
 
-#region Functions 
-#endregion
+    public void Fill()
+    {
+        var (startX, startY) = _paint.WallePoss;
+        var targetColor = _paint.GetColorAt(startX, startY);
+        var mask = new bool[_paint.GetCanvasSize(), _paint.GetCanvasSize()];
+        var fillColor = _paint.Brush;
+        if (targetColor == fillColor) return;
+
+        Queue<(int, int)> queue = new();
+        queue.Enqueue((startX, startY));
+
+        while (queue.Count > 0)
+        {
+            var (x, y) = queue.Dequeue();
+            _paint.PaintCell(x, y);
+            mask[x, y] = true;
+
+            foreach (var (dx, dy) in new (int, int)[] { (-1, 0), (1, 0), (0, -1), (0, 1) })
+            {
+                int newX = x + dx, newY = y + dy;
+                if (!mask[newX, newY] && _paint.IsValidPosition(newX, newY) && _paint.GetColorAt(newX, newY) == targetColor)
+                    queue.Enqueue((newX, newY));
+            }
+        }
+    }
+
+    public void Spawn(int x, int y)
+    {
+        if (_paint.WalleExist)
+            throw new InvalidOperationException("");
+        if (!_paint.IsValidPosition(x, y))
+            throw new ArgumentException("Wall-E is positioned outside the canvas");
+        _paint.PaintWalle(x, y);
+    }
+
+    void Color(string color)
+    {
+        var colorValue = _paint.GetColorBrush(color);
+        if (colorValue is null)
+            throw new InvalidCastException("The color is not valid");
+    }
+
+    public void Size(int size)
+    {
+        if (int.IsNegative(size))
+            throw new InvalidOperationException("Negative number is not available");
+        _paint.GetNewSizeBrush(size);
+    }
+
+    public void DrawCircle(int dirX, int dirY, int radius)
+    {
+        if (radius <= 0) return;
+
+        int x = 0;
+        int y = radius;
+        int x0 = _paint.WallePoss.x + dirX * radius;
+        int y0 = _paint.WallePoss.y + dirY * radius;
+        int d = 1 - radius;
+
+        // Dibujar puntos iniciales (4 puntos cardinales)
+        _paint.PaintCell(x0 + x, y0 + y, _paint.BrushSize);
+        _paint.PaintCell(x0 + x, y0 - y, _paint.BrushSize);
+        _paint.PaintCell(x0 + y, y0 + x, _paint.BrushSize);
+        _paint.PaintCell(x0 - y, y0 + x, _paint.BrushSize);
+
+        while (y >= x)
+        {
+            x++;
+
+            if (d > 0)
+            {
+                y--;
+                d += 2 * (x - y) + 1;
+            }
+            else
+            {
+                d += 2 * x + 1;
+            }
+
+            // Dibujar los 8 puntos de simetría
+            _paint.PaintCell(x0 + x, y0 + y, _paint.BrushSize);
+            _paint.PaintCell(x0 - x, y0 + y, _paint.BrushSize);
+            _paint.PaintCell(x0 + x, y0 - y, _paint.BrushSize);
+            _paint.PaintCell(x0 - x, y0 - y, _paint.BrushSize);
+            _paint.PaintCell(x0 + y, y0 + x, _paint.BrushSize);
+            _paint.PaintCell(x0 - y, y0 + x, _paint.BrushSize);
+            _paint.PaintCell(x0 + y, y0 - x, _paint.BrushSize);
+            _paint.PaintCell(x0 - y, y0 - x, _paint.BrushSize);
+        }
+
+        _paint.PaintWalle(x0, y0);
+    }
+
+
+    public void DrawRectangle(int dirX, int dirY, int distance, int width, int height)
+    {
+        int newX = _paint.WallePoss.x + dirX * distance;
+        int newY = _paint.WallePoss.y + dirY * distance;
+
+        _paint.PaintWalle(newX - width + 1, newY - height + 1);
+        DrawLine(0, 1, height * 2 - 1);
+        DrawLine(1, 0, width * 2 - 1);
+        DrawLine(0, -1, height * 2 - 1);
+        DrawLine(-1, 0, width * 2 - 1);
+        _paint.PaintWalle(newX, newY);
+    }
+    #endregion
+
+    #region Functions 
+
+    public int GetactualX() => _paint.WallePoss.x;
+
+    public int GetActualY() => _paint.WallePoss.y;
+
+    public int GetCanvasSize() => _paint.GetCanvasSize();
+
+    public int GetColorCount(string color, int x1, int y1, int x2, int y2)
+    {
+        if (x1 < 0 || y1 < 0 || x2 >= GetCanvasSize() || y2 >= GetCanvasSize())
+            throw new InvalidOperationException(); // Si alguna coordenada está fuera de los límites
+
+        int count = 0;
+        for (int i = x1; i <= x2; i++)
+        {
+            for (int j = y1; j <= y2; j++)
+            {
+                if (_paint.GetColorAt(i, j) == _paint.GetColorBrush(color))
+                    count++;
+            }
+        }
+
+        return count;
+    }
+
+    public bool IsBrushColor(string color)
+    {
+        return _paint.GetColorBrush(color) is null;
+    }
+    public bool IsBrushSize(int size)
+    {
+        return size == _paint.BrushSize;
+    }
+    public bool IsCanvasColor(string color, int vertical, int horizontal)
+    {
+        int newX = _paint.WallePoss.x + horizontal;
+        int newY = _paint.WallePoss.y + vertical;
+        return _paint.GetColorBrush(color) == _paint.GetColorAt(newX, newY);
+    }
+
+    #endregion
 
 
 
-#region Tools
+    #region Tools
     private void DrawStep(int dirX, int dirY, int distance)
     {
         (int x, int y) = _paint.WallePoss;
-        for (int i = 1; i < distance; i++)
+        for (int i = 1; i <= distance; i++)
             _paint.PaintCell(x + dirX * i, y + dirY * i);
     }
 
@@ -77,15 +228,15 @@ public class ControlerMethods(IPaint paint) : IContextCallable
             case "getactualy":
                 return new ValueType(TokenType.Num, _paint.WallePoss.y);
             case "getcanvassize":
-                return new ValueType(TokenType.Num, _paint.GetCanvasSize());
+                return new ValueType(TokenType.Num, GetCanvasSize());
             case "getcolorcount":
-                return new ValueType(TokenType.Num, _paint.GetColorCount((string)paramValues[0].Value, (int)paramValues[1].Value, (int)paramValues[2].Value, (int)paramValues[3].Value, (int)paramValues[4].Value));
+                return new ValueType(TokenType.Num, GetColorCount((string)paramValues[0].Value, (int)paramValues[1].Value, (int)paramValues[2].Value, (int)paramValues[3].Value, (int)paramValues[4].Value));
             case "isbrushcolor":
-                return new ValueType(TokenType.Boolean, _paint.IsBrushColor((string)paramValues[0].Value));
+                return new ValueType(TokenType.Boolean, IsBrushColor((string)paramValues[0].Value));
             case "isbrushsize":
-                return new ValueType(TokenType.Boolean, _paint.IsBrushSize((int)paramValues[0].Value));
+                return new ValueType(TokenType.Boolean, IsBrushSize((int)paramValues[0].Value));
             case "iscanvascolor":
-                return new ValueType(TokenType.Boolean, _paint.IsCanvasColor((string)paramValues[0].Value, (int)paramValues[1].Value, (int)paramValues[2].Value));
+                return new ValueType(TokenType.Boolean, IsCanvasColor((string)paramValues[0].Value, (int)paramValues[1].Value, (int)paramValues[2].Value));
             default:
                 throw new ArgumentException("No existe la funcion " + name);
 
@@ -100,23 +251,23 @@ public class ControlerMethods(IPaint paint) : IContextCallable
         switch (name.ToLowerInvariant())
         {
             case "fill":
-                _paint.Fill();
+                Fill();
                 break;
 
             case "spawn":
                 int x = (int)paramValues[0].Value;
                 int y = (int)paramValues[1].Value;
-                _paint.Spawn(x, y);
+                Spawn(x, y);
                 break;
 
             case "color":
                 string color = (string)paramValues[0].Value;
-                _paint.Color(color);
+                Color(color);
                 break;
 
             case "size":
                 int size = (int)paramValues[0].Value;
-                _paint.Size(size);
+                Size(size);
                 break;
 
             case "drawline":
@@ -129,19 +280,19 @@ public class ControlerMethods(IPaint paint) : IContextCallable
                 dirX = (int)paramValues[0].Value;
                 dirY = (int)paramValues[1].Value;
                 int radius = (int)paramValues[2].Value;
-                _paint.DrawCircle(dirX, dirY, radius);
+                DrawCircle(dirX, dirY, radius);
                 break;
             case "drawrectangle":
                 dirX = (int)paramValues[0].Value;
                 dirY = (int)paramValues[1].Value;
-                distance = (int) paramValues[2].Value;
+                distance = (int)paramValues[2].Value;
                 int width = (int)paramValues[3].Value;
                 int height = (int)paramValues[4].Value;
-                _paint.DrawRectangle(dirX, dirY, distance, width, height);
+                DrawRectangle(dirX, dirY, distance, width, height);
                 break;
             default:
                 throw new ArgumentException("No existe la accion " + name);
-        
+
         }
     }
 
@@ -270,5 +421,5 @@ public class ControlerMethods(IPaint paint) : IContextCallable
                 return false;
         }
     }
-#endregion
+    #endregion
 }
