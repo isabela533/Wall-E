@@ -24,7 +24,7 @@ public class ControlerMethods(IPaint paint) : IContextCallable
         for (int count = 0; count < distance; count++)
         {
             // Mover Walle y actualizar posicion
-            _paint.PaintWalle(x + dirX * count, y + dirY * count);
+            _paint.PaintWalle(x + dirX * (count + 1), y + dirY * (count + 1));
             _paint.PaintCell(_paint.WallePoss.x, _paint.WallePoss.y);
 
             int size;
@@ -155,10 +155,10 @@ public class ControlerMethods(IPaint paint) : IContextCallable
         int newY = _paint.WallePoss.y + dirY * distance;
 
         _paint.PaintWalle(newX - width + 1, newY - height + 1);
-        DrawLine(0, 1, height * 2 - 1);
-        DrawLine(1, 0, width * 2 - 1);
-        DrawLine(0, -1, height * 2 - 1);
-        DrawLine(-1, 0, width * 2 - 1);
+        DrawLine(0, 1, height * 2 - 1 - 1);
+        DrawLine(1, 0, width * 2 - 1 -1);
+        DrawLine(0, -1, height * 2 - 1 -1);
+        DrawLine(-1, 0, width * 2 - 1 - 1);
         _paint.PaintWalle(newX, newY);
     }
     #endregion
