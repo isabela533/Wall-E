@@ -63,7 +63,23 @@ public class ValueType(TokenType kind, object value)
 
     #endregion
 
-    #region Boolean
+    #region Boolean & Unary 
+    public static ValueType operator -(ValueType a)
+    {
+        if (a.Kind != TokenType.Num)
+            throw new InvalidOperationException("Unary '-' only supported on numeric types");
+
+        return new ValueType(TokenType.Num, -1 * (int)a.Value);
+    }
+
+    public static ValueType operator +(ValueType a)
+    {
+        if (a.Kind != TokenType.Num)
+            throw new InvalidOperationException("Unary '+' only supported on numeric types");
+
+        return new ValueType(TokenType.Num, +1 * (int)a.Value);
+    }
+    
     public static ValueType operator !(ValueType a)
     {
         if (a.Kind != TokenType.Boolean)
@@ -75,42 +91,42 @@ public class ValueType(TokenType kind, object value)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
-        return new ValueType(TokenType.Boolean, a.Value == b.Value);
+        return new ValueType(TokenType.Boolean, Equals(a.Value, b.Value));
     }
 
     public static ValueType operator !=(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
-        return new ValueType(TokenType.Boolean, a.Value != b.Value);
+        return new ValueType(TokenType.Boolean, !Equals(a.Value,b.Value));
     }
 
     public static ValueType operator >(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
-        return new ValueType(a.Kind, (int)a.Value > (int)b.Value);
+        return new ValueType(TokenType.Boolean, (int)a.Value > (int)b.Value);
     }
 
     public static ValueType operator <(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
-        return new ValueType(a.Kind, (int)a.Value < (int)b.Value);
+        return new ValueType(TokenType.Boolean, (int)a.Value < (int)b.Value);
     }
 
     public static ValueType operator >=(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
-        return new ValueType(a.Kind, (int)a.Value >= (int)b.Value);
+        return new ValueType(TokenType.Boolean, (int)a.Value >= (int)b.Value);
     }
 
     public static ValueType operator <=(ValueType a, ValueType b)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
-        return new ValueType(a.Kind, (int)a.Value <= (int)b.Value);
+        return new ValueType(TokenType.Boolean, (int)a.Value <= (int)b.Value);
     }
     #endregion
     // se usa para los botones

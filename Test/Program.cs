@@ -19,7 +19,8 @@ public class Program
         // Cosas del proyecto Original
         var reader = new StreamReader(path);
         string code = reader.ReadToEnd();
-        Token[] tokens = Tokenizador.Tokenizar(code);
+        Tokenizador tokenizador = new Tokenizador();
+        Token[] tokens = tokenizador.Tokenizar(code);
         var ast = parser.Parse(tokens);
         ast.Accept(context);
     }

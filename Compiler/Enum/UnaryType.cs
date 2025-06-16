@@ -2,5 +2,7 @@ namespace Compiler.Enum;
 
 public enum UnaryType
 {
-    Negative
+    Negative,
+    Not,
+    Positive
 }

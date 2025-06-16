@@ -8,7 +8,6 @@ using Compiler.Interface;
 using Compiler.Language;
 using Compiler.Tokenizador;
 using ValueType = Compiler.Language.ValueType;
-//TODO: DUDA debo de poner los errores aqui tb? es decir que si puedo agregar errores a la lista de tokenizador 
 namespace Compiler.Parser;
 
 public class Parser
@@ -55,10 +54,10 @@ public class Parser
         var startIndex = tokenIndex;
         if (!MatchToken(tokens, TokenType.GoTo)
             || !MatchToken(tokens, TokenType.CorcheteIzquierdo)
-            || !MatchToken(tokens, TokenType.Identificador)
-        )
+            || !MatchToken(tokens, TokenType.Identificador))
+        {
             return ResetExp(startIndex, out line);
-
+        }
         var name = tokens[tokenIndex - 1].Value;
         if (!MatchToken(tokens, TokenType.CorcheteDerecho)
             || !MatchToken(tokens, TokenType.ParentesisIzquierdo)
@@ -76,7 +75,7 @@ public class Parser
         if (!MatchToken(tokens, TokenType.Label))
             return ResetExp(startIndex, out line);
         var token = tokens[tokenIndex - 1];
-        var node = new LabelInstruction(token.Value, token.Row);
+        var node = new LabelInstruction(token.Value, token.Row);        
         return SetExp(node, out line);
     }
 
@@ -172,11 +171,45 @@ public class Parser
     private bool GetMultExpression(Token[] tokens, out IExpression? num)
         => ParseExpression(tokens, out num, GetPowExpression, [TokenType.Mult, TokenType.Div, TokenType.Module]);
     private bool GetPowExpression(Token[] tokens, out IExpression? num)
-        => ParseExpression(tokens, out num, GetNumLiteral, [TokenType.Pow]);
+        => ParseExpression(tokens, out num, GetUnaryExpression, [TokenType.Pow]);
     private bool GetNumLiteral(Token[] tokens, out IExpression? exp)
         => GetLiteralExp(tokens, out exp, GetNumExpression, TokenType.Num);
 
     #endregion
+
+    private bool GetUnaryExpression(Token[] tokens, out IExpression? exp)
+    {
+        exp = null;
+
+        if (tokens.Length == 0)
+            return false;
+        var token = tokens[tokenIndex];
+
+        if (token.Type == TokenType.Resta ||
+            token.Type == TokenType.Suma ||
+            token.Type == TokenType.Negacion)
+        {
+            tokenIndex++; // se avanza al siguiente token
+
+            if (GetUnaryExpression(tokens, out var operand))
+            {
+                var unaryType = token.Type switch
+                {
+                    TokenType.Resta => UnaryType.Negative,
+                    TokenType.Suma => UnaryType.Positive,
+                    TokenType.Negacion => UnaryType.Not,
+                    _ => throw new InvalidOperationException("Unary token not recognized")
+                };
+                exp = new UnaryExpression(operand!, unaryType);
+                return true;
+            }
+
+            return false;
+        }
+
+        // Si no hay unario, intentás parsear un literal
+        return GetNumLiteral(tokens, out exp);
+    }
 
     #region Boolean 
 
@@ -189,8 +222,6 @@ public class Parser
     private bool GetBoolLiteral(Token[] tokens, out IExpression? cond)
         => GetComparisonExpression(tokens, out cond)
         || GetLiteralExp(tokens, out cond, GetBoolExpression, TokenType.Boolean);
-    // Implemetar los comparadores, son reduce porque compara primero y lo convierte a booleano : listo, revisar bien
-
     #endregion
 
     private bool GetStrExpression(Token[] tokens, out IExpression? cond)

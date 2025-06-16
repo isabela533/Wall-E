@@ -2,15 +2,13 @@ using System.Text.RegularExpressions;
 
 namespace Compiler.Tokenizador;
 
-// TODO: REVISAR clase no estatica y añadir lista de errores
-
 public class Tokenizador
 {
     #region Patterns
 
     public static readonly string id = @"[a-zA-Z][a-zA-Z0-9_]*";
-    public static readonly string label = $@"{id}\n|{id}\r\n";
-    public static readonly string num = $@"\d+|^{id}-\d+";
+    public static readonly string label = $@"({id})(\r?\n)";
+    public static readonly string num = $@"-?\d+|{id}-\d+"; //lo arregle, ver si funciona , lo debuggee y me da bien, de todas formas seguir probando 
     public static readonly string str = @"""[^""]*""";
     public static readonly string otherOp = @"\*\*";
     public static readonly string comp = @"[<>=\!]=";
@@ -111,13 +109,13 @@ public class Tokenizador
                 return TokenType.GoTo;
         }
 
-        if (value[^1] == '\n')
+        if (Regex.IsMatch(value, label))
             return TokenType.Label;
         if (value[^1] == '"' && value[0] == '"')
             return TokenType.String;
         if (bool.TryParse(value, out bool _))
             return TokenType.Boolean;
-        if (int.TryParse(value, out int _))
+        if (Regex.IsMatch(value, num))
             return TokenType.Num;
         return TokenType.Identificador;
     }

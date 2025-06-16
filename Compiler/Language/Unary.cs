@@ -11,9 +11,12 @@ public class UnaryExpression(IExpression expression, UnaryType type) : IExpressi
 
     public ValueType Accept(Context context)
     {
+        ValueType value = expression.Accept(context);
         return type switch
         {
-            UnaryType.Negative => !expression.Accept(context),
+            UnaryType.Not => !value,
+            UnaryType.Negative => - value,
+            UnaryType.Positive => + value,
             _ => throw new InvalidOperationException(),
         };
     }

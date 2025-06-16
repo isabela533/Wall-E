@@ -12,12 +12,10 @@ using Compiler.Parser;
 using Compiler.Tokenizador;
 using Avalonia.Media.Imaging;
 namespace Visual;
-//TODO: en el visual debe haber un panel de errores esta mal 
 public partial class MainWindow : Window, IPaint
 {
     public Border[,] Map;
     private ControlerMethods controler;
-    //TODO: REVISAR hacer estos
     private Image WalleImage;
     private (int x, int y) _wallePoss;
     public IBrush Brush { get; set; }

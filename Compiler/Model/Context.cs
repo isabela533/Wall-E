@@ -45,7 +45,6 @@ public interface IContextCallable
 {
     ValueType CallFunction(string name, ValueType[] paramValues);
     void ExecuteAction(string name, ValueType[] paramValues);
-    //TODO: REVISAR Considerar hacer 2 metodos para analizar si los parametros son correctos (esto es para el chequeo semantico), listo
     bool CheckParamsType(string name, ValueType[] paramValues);
     bool CheckParamsCount(string name, ValueType[] paramValues, out int cantParams);
 }

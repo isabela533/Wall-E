@@ -19,6 +19,7 @@ public class ControlerMethods(IPaint paint) : IContextCallable
     #region Instructions 
     public void DrawLine(int dirX, int dirY, int distance)
     {
+        if (distance <= 0) throw new ArgumentException("Distance cannot be a negative number");
         (int x, int y) = _paint.WallePoss;
         for (int count = 0; count < distance; count++)
         {
@@ -148,6 +149,8 @@ public class ControlerMethods(IPaint paint) : IContextCallable
 
     public void DrawRectangle(int dirX, int dirY, int distance, int width, int height)
     {
+        if(distance <= 0 || width <= 0 || height <= 0)  
+            throw new ArgumentException("Negative numbers are not valid as parameters of this function");
         int newX = _paint.WallePoss.x + dirX * distance;
         int newY = _paint.WallePoss.y + dirY * distance;
 
@@ -212,9 +215,7 @@ public class ControlerMethods(IPaint paint) : IContextCallable
         for (int i = 1; i <= distance; i++)
             _paint.PaintCell(x + dirX * i, y + dirY * i);
     }
-
-    // TODO: REVISAR Implementar para poder usarlo como IContextCallable en el contexto del Compiler
-    // TODO: REVISAR Considerar hacer un metodo auxiliar para verificar si los parametros estan correctos (cantidad y tipos) 
+ 
     public ValueType CallFunction(string name, ValueType[] paramValues)
     {
         if (!CheckParamsType(name, paramValues) || !CheckParamsCount(name, paramValues, out int countParams))

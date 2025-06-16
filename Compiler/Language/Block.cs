@@ -7,6 +7,7 @@ namespace Compiler.Language;
 
 internal class BlockExpression(List<IInstruction> lines) : IInstruction
 {
+    //TODO: se parte aqui 
     private readonly List<IInstruction> Lines = lines;
 
     public void Accept(Context context)

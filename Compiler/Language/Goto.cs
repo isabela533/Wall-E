@@ -18,7 +18,7 @@ class GotoInstruction(string target, IExpression cond) : IInstruction
 class LabelInstruction(string name, int row) : IInstruction
 {
     public string Name { get; } = name;
-    public int Row { get; } = row;
+    public int Row { get; } = row; 
 
     public void Accept(Context context) => context.Labels[Name] = Row;
 }
