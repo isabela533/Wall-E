@@ -54,7 +54,7 @@ public partial class MainWindow : Window, IPaint
     {
         if (x < 0 || x >= Map.GetLength(1) || y < 0 || y >= Map.GetLength(0))
             return null!;
-        return Map[y, x].Background!;
+        return Map[x, y].Background!;
     }
 
     public bool IsValidPosition(int x, int y)
