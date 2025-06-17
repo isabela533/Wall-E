@@ -64,6 +64,7 @@ public partial class MainWindow : Window, IPaint
 
     public void PaintCell(int x, int y, int size)
     {
+        if(IsValidPosition(x,y)) throw new IndexOutOfRangeException();
         var cor = (size - 1) / 2;
         for (int i = 0; i < size; i++)
         {
