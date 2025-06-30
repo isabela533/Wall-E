@@ -11,6 +11,7 @@ using Compiler.Model;
 using Compiler.Parser;
 using Compiler.Tokenizador;
 using Avalonia.Media.Imaging;
+using System.IO;
 namespace Visual;
 public partial class MainWindow : Window, IPaint
 {
@@ -64,7 +65,7 @@ public partial class MainWindow : Window, IPaint
 
     public void PaintCell(int x, int y, int size)
     {
-        if(IsValidPosition(x,y)) throw new IndexOutOfRangeException();
+        if (IsValidPosition(x, y)) throw new IndexOutOfRangeException();
         var cor = (size - 1) / 2;
         for (int i = 0; i < size; i++)
         {
@@ -113,7 +114,7 @@ public partial class MainWindow : Window, IPaint
 
         PixelGrid.RowDefinitions.Clear();
         PixelGrid.ColumnDefinitions.Clear();
-        
+
         var length = new GridLength(1, GridUnitType.Star);
 
         for (int i = 0; i < count; i++)
@@ -126,6 +127,58 @@ public partial class MainWindow : Window, IPaint
         int columnas = PixelGrid.ColumnDefinitions.Count;
         Map = new Border[filas, columnas];
         CrearCuadrosConBorde();
+    }
+
+    [Obsolete]
+    private async void OnExportarClick(object? sender, RoutedEventArgs e)
+    {
+        var dialogo = new SaveFileDialog
+        {
+            Title = "Guardar archivo .pw",
+            DefaultExtension = "pw",
+            Filters =
+            {
+                new FileDialogFilter
+                {
+                    Name = "Archivo .pw",
+                    Extensions = { "pw" }
+                }
+            }
+        };
+
+        var archivo = await dialogo.ShowAsync(this);
+
+        if (!string.IsNullOrWhiteSpace(archivo))
+        {
+            string saveContent = Editor.Text; //archivo que quiero exportar que es mi text del editor
+            await File.WriteAllTextAsync(archivo, saveContent);
+        }
+    }
+
+    [Obsolete]
+    private async void OnImportarClick(object? sender, RoutedEventArgs e)
+    {
+       var dialogo = new OpenFileDialog
+        {
+            Title = "Importar archivo .pw",
+            AllowMultiple = false,
+            Filters =
+            {
+                new FileDialogFilter
+                {
+                    Name = "Archivo .pw",
+                    Extensions = { "pw" }
+                }
+            }
+        };
+
+        var archivo = await dialogo.ShowAsync(this);
+
+        if (archivo?.Length > 0 && File.Exists(archivo[0]))
+        {
+            var contenido = await File.ReadAllTextAsync(archivo[0]);
+            Editor.Text = contenido; // poner el contenido leido del archivo en el text editor
+        }
     }
 
     private void CrearCuadrosConBorde()
@@ -210,7 +263,7 @@ public partial class MainWindow : Window, IPaint
         if (IsValidPosition(WallePoss.x, WallePoss.y) && Map[WallePoss.x, WallePoss.y] is not null)
             Map[WallePoss.x, WallePoss.y].Child = null;
         WalleExist = false;
-        
+
         foreach (var item in PixelGrid.Children)
         {
             if (item is Border border)

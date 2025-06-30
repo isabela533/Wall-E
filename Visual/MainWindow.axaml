@@ -38,6 +38,22 @@
                     </Style>
                 </Button.Styles>
             </Button>
+            <Button Content="Exportar" Click="OnExportarClick"  CornerRadius="8"
+                FontWeight="SemiBold" Foreground="White" Background="LightBlue" Cursor="Hand">
+                <Button.Styles>
+                    <Style Selector="Button:hover">
+                        <Setter Property="Background" Value="#222222"/>
+                    </Style>
+                </Button.Styles>
+            </Button>
+            <Button Content="Importar" Click="OnImportarClick"  CornerRadius="8"
+                FontWeight="SemiBold" Foreground="White" Background="LightBlue" Cursor="Hand">
+                <Button.Styles>
+                    <Style Selector="Button:hover">
+                        <Setter Property="Background" Value="#222222"/>
+                    </Style>
+                </Button.Styles>
+            </Button>
             <Label Content="Aumentar Tamaño del Canvas" FontWeight="SemiBold"
                 Foreground="White" Background="LightBlue" CornerRadius="8"
                 BorderThickness="1.25" VerticalContentAlignment="Center"/>
