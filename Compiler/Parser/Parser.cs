@@ -12,7 +12,7 @@ namespace Compiler.Parser;
 
 public class Parser
 {
-    private int tokenIndex;
+    private int tokenIndex; 
     public delegate bool GetExpressionMethod(Token[] tokens, out IExpression? exp);
 
     public IInstruction Parse(Token[] tokens)
@@ -21,7 +21,7 @@ public class Parser
         if (!GetBlock(tokens, out IInstruction block))
             throw new Exception();
         if (!MatchToken(tokens, TokenType.EndOfFile))
-            throw new Exception();
+            throw new Exception("Not valid");
         return block;
     }
 
@@ -207,7 +207,7 @@ public class Parser
             return false;
         }
 
-        // Si no hay unario, intentás parsear un literal
+        // Si no hay unario,parsear un literal
         return GetNumLiteral(tokens, out exp);
     }
 
@@ -226,7 +226,6 @@ public class Parser
 
     private bool GetStrExpression(Token[] tokens, out IExpression? cond)
         => GetStrLiteral(tokens, out cond);
-
     private bool GetStrLiteral(Token[] tokens, out IExpression? cond)
         => GetLiteralExp(tokens, out cond, GetStrExpression, TokenType.String);
 

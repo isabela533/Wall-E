@@ -16,6 +16,7 @@ namespace Visual.Controler;
 public class ControlerMethods(IPaint paint) : IContextCallable
 {
     private readonly IPaint _paint = paint;
+
     #region Instructions 
     public void DrawLine(int dirX, int dirY, int distance)
     {
@@ -82,9 +83,9 @@ public class ControlerMethods(IPaint paint) : IContextCallable
     public void Spawn(int x, int y)
     {
         if (_paint.WalleExist)
-            throw new InvalidOperationException("");
+            throw new ArgumentException("Wall-E already exists");
         if (!_paint.IsValidPosition(x, y))
-            throw new ArgumentException("Wall-E is positioned outside the canvas");
+           throw new ArgumentException("Wall-E is positioned outside the canvas");
         _paint.PaintWalle(x, y);
     }
 
@@ -92,13 +93,13 @@ public class ControlerMethods(IPaint paint) : IContextCallable
     {
         var colorValue = _paint.GetColorBrush(color);
         if (colorValue is null)
-            throw new InvalidCastException("The color is not valid");
+            throw new ArgumentException("The color is not valid");
     }
 
     public void Size(int size)
     {
         if (int.IsNegative(size))
-            throw new InvalidOperationException("Negative number is not available");
+            throw new ArgumentException("Negative number is not available");
         _paint.GetNewSizeBrush(size);
     }
 
@@ -108,12 +109,12 @@ public class ControlerMethods(IPaint paint) : IContextCallable
 
         int x = 0;
         int y = radius;
-        int x0 = _paint.WallePoss.x + dirX * radius;
-        int y0 = _paint.WallePoss.y + dirY * radius;
+        int x0 = _paint.WallePoss.x + dirX;
+        int y0 = _paint.WallePoss.y + dirY;
         int d = 1 - radius;
 
         // Dibujar puntos iniciales (4 puntos cardinales)
-        _paint.PaintCell(x0 + x, y0 + y, _paint.BrushSize);
+        _paint.PaintCell(x0 + x , y0 + y, _paint.BrushSize);
         _paint.PaintCell(x0 + x, y0 - y, _paint.BrushSize);
         _paint.PaintCell(x0 + y, y0 + x, _paint.BrushSize);
         _paint.PaintCell(x0 - y, y0 + x, _paint.BrushSize);
@@ -149,16 +150,16 @@ public class ControlerMethods(IPaint paint) : IContextCallable
 
     public void DrawRectangle(int dirX, int dirY, int distance, int width, int height)
     {
-        if(distance <= 0 || width <= 0 || height <= 0)  
-            throw new ArgumentException("Negative numbers are not valid as parameters of this function");
+        if (distance <= 0 || width <= 0 || height <= 0)
+           throw new ArgumentException("Negative numbers are not valid as parameters of this function");
         int newX = _paint.WallePoss.x + dirX * distance;
         int newY = _paint.WallePoss.y + dirY * distance;
 
-        _paint.PaintWalle(newX - width + 1, newY - height + 1);
-        DrawLine(0, 1, height * 2 - 1 - 1);
-        DrawLine(1, 0, width * 2 - 1 -1);
-        DrawLine(0, -1, height * 2 - 1 -1);
-        DrawLine(-1, 0, width * 2 - 1 - 1);
+        _paint.PaintWalle(newX - height + 1, newY - width + 1);
+        DrawLine(0, 1, width * 2 - 1 - 1); //horizontal hacia la derecha 
+        DrawLine(1, 0, height * 2 - 1 - 1); //vertical hacia abajo
+        DrawLine(0, -1, width * 2 - 1 - 1); //horizontal hacia la izquierda
+        DrawLine(-1, 0, height * 2 - 1 - 1); //vertical ahcia arriba 
         _paint.PaintWalle(newX, newY);
     }
     #endregion
@@ -174,7 +175,7 @@ public class ControlerMethods(IPaint paint) : IContextCallable
     public int GetColorCount(string color, int x1, int y1, int x2, int y2)
     {
         if (x1 < 0 || y1 < 0 || x2 >= GetCanvasSize() || y2 >= GetCanvasSize())
-            throw new InvalidOperationException(); // Si alguna coordenada está fuera de los límites
+            throw new ArgumentException("Out of range"); // Si alguna coordenada está fuera de los límites
 
         int count = 0;
         for (int i = x1; i <= x2; i++)
@@ -215,7 +216,7 @@ public class ControlerMethods(IPaint paint) : IContextCallable
         for (int i = 1; i <= distance; i++)
             _paint.PaintCell(x + dirX * i, y + dirY * i);
     }
- 
+
     public ValueType CallFunction(string name, ValueType[] paramValues)
     {
         if (!CheckParamsType(name, paramValues) || !CheckParamsCount(name, paramValues, out int countParams))
@@ -239,8 +240,7 @@ public class ControlerMethods(IPaint paint) : IContextCallable
             case "iscanvascolor":
                 return new ValueType(TokenType.Boolean, IsCanvasColor((string)paramValues[0].Value, (int)paramValues[1].Value, (int)paramValues[2].Value));
             default:
-                throw new ArgumentException("No existe la funcion " + name);
-
+               throw new ArgumentException("No existe la funcion " + name);
         }
     }
 
@@ -293,7 +293,6 @@ public class ControlerMethods(IPaint paint) : IContextCallable
                 break;
             default:
                 throw new ArgumentException("No existe la accion " + name);
-
         }
     }
 

@@ -33,4 +33,5 @@ public enum TokenType
     Return,
     GoTo,
     Or,
+    Invalid,
 }

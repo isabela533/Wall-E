@@ -12,11 +12,12 @@ using Compiler.Parser;
 using Compiler.Tokenizador;
 using Avalonia.Media.Imaging;
 using System.IO;
+using System.Collections.Generic;
 namespace Visual;
 public partial class MainWindow : Window, IPaint
 {
     public Border[,] Map;
-    private ControlerMethods controler;
+    private ControlerMethods? controler;
     private Image WalleImage;
     private (int x, int y) _wallePoss;
     public IBrush Brush { get; set; }
@@ -42,7 +43,26 @@ public partial class MainWindow : Window, IPaint
         _wallePoss = (0, 0);
     }
 
+
     #region tools 
+    private void GetErrors(List<string> errores)
+    {
+        // Limpiar errores previos
+        ErrorsPanel.Text = string.Empty;
+
+        if (errores != null && errores.Count > 0)
+        {
+            var sbErrores = new StringBuilder();
+            sbErrores.AppendLine("Methods errors detected:");
+            foreach (var error in errores)
+            {
+                sbErrores.AppendLine($"- {error}"); // Ajustar formato según estructura del error (línea, col, mensaje)
+            }
+            ErrorsPanel.Text = sbErrores.ToString();
+            return;
+        }
+    }
+
     public void PaintWalle(int x, int y)
     {
         WalleExist = true;
@@ -65,7 +85,7 @@ public partial class MainWindow : Window, IPaint
 
     public void PaintCell(int x, int y, int size)
     {
-        if (IsValidPosition(x, y)) throw new IndexOutOfRangeException();
+        if (!IsValidPosition(x, y)) throw new IndexOutOfRangeException();
         var cor = (size - 1) / 2;
         for (int i = 0; i < size; i++)
         {
@@ -158,7 +178,7 @@ public partial class MainWindow : Window, IPaint
     [Obsolete]
     private async void OnImportarClick(object? sender, RoutedEventArgs e)
     {
-       var dialogo = new OpenFileDialog
+        var dialogo = new OpenFileDialog
         {
             Title = "Importar archivo .pw",
             AllowMultiple = false,
@@ -242,7 +262,7 @@ public partial class MainWindow : Window, IPaint
     {
         ClearCanvas();
         var parser = new Parser();
-        var context = new Context(controler); ;
+        var context = new Context(controler);  
 
         string code = Editor.Text;
         var tokenizador = new Tokenizador();
@@ -254,7 +274,7 @@ public partial class MainWindow : Window, IPaint
         }
         catch (Exception ex)
         {
-
+            ErrorsPanel.Text = $"Error: {ex.Message}";
         }
     }
 

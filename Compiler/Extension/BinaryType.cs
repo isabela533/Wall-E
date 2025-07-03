@@ -1,7 +1,6 @@
 using Compiler.Enum;
 
-namespace Compiler.Extension;
-
+namespace Compiler.Extension;  
 public static class BinaryTypeExtension
 {
     public static bool IsShift(this BinaryType binary) => binary switch
@@ -14,7 +13,8 @@ public static class BinaryTypeExtension
         or BinaryType.MenorIgual 
         or BinaryType.MayorIgual 
         or BinaryType.Igual 
-        or BinaryType.Distinto => false,
+        or BinaryType.Distinto
+        or BinaryType.Module => false,
         _ => throw new InvalidCastException(),
     };
 }

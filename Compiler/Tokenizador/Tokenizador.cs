@@ -8,7 +8,7 @@ public class Tokenizador
 
     public static readonly string id = @"[a-zA-Z][a-zA-Z0-9_]*";
     public static readonly string label = $@"({id})(\r?\n)";
-    public static readonly string num = $@"-?\d+|{id}-\d+"; //lo arregle, ver si funciona , lo debuggee y me da bien, de todas formas seguir probando 
+    public static readonly string num = $@"-?\d+|{id}-\d+";
     public static readonly string str = @"""[^""]*""";
     public static readonly string otherOp = @"\*\*";
     public static readonly string comp = @"[<>=\!]=";

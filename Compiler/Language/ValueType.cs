@@ -129,7 +129,7 @@ public class ValueType(TokenType kind, object value)
         return new ValueType(TokenType.Boolean, (int)a.Value <= (int)b.Value);
     }
     #endregion
-    // se usa para los botones
+    //0 referencesÑ es lo mismo que el tryparse 
     public static ValueType Parse(string s, TokenType type)
     {
         return type switch
