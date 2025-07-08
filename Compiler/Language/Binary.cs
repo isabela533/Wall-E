@@ -1,6 +1,7 @@
 using Compiler.Enum;
 using Compiler.Interface;
 using Compiler.Model;
+using Compiler.Tokenizador;
 
 namespace Compiler.Language;
 
@@ -11,20 +12,27 @@ public class BinaryExpression(IExpression left, IExpression right, BinaryType ty
     public BinaryType Type => type;
     public ValueType Accept(Context context)
     {
+        var left = Left.Accept(context);
+        var right = Right.Accept(context);
+        // TODO: cambiar a ingles
+        if (left.Kind != right.Kind)
+            throw new InvalidOperationException("Tienen que ser del mismo tipo");
+        if (left.Kind != TokenType.Num && type is not BinaryType.Igual or BinaryType.Distinto)
+            throw new InvalidOperationException($"No se admite {type} entre {left.Kind} y {right.Kind}");
         return type switch
         {
-            BinaryType.Addition => left.Accept(context) + right.Accept(context),
-            BinaryType.Diferencia => left.Accept(context) - right.Accept(context),
-            BinaryType.Multiplication => left.Accept(context) * right.Accept(context),
-            BinaryType.Potencia => ValueType.Pow(left.Accept(context), right.Accept(context)),
-            BinaryType.Division => left.Accept(context) / right.Accept(context),
-            BinaryType.Module => left.Accept(context) % right.Accept(context),
-            BinaryType.Igual => left.Accept(context) == right.Accept(context),
-            BinaryType.Distinto => left.Accept(context) != right.Accept(context),
-            BinaryType.MayorQue => left.Accept(context) > right.Accept(context),
-            BinaryType.MenorQue => left.Accept(context) < right.Accept(context),
-            BinaryType.MayorIgual => left.Accept(context) >= right.Accept(context),
-            BinaryType.MenorIgual => left.Accept(context) <= right.Accept(context),
+            BinaryType.Addition => left + right,
+            BinaryType.Diferencia => left - right,
+            BinaryType.Multiplication => left * right,
+            BinaryType.Potencia => ValueType.Pow(left, right),
+            BinaryType.Division => left / right,
+            BinaryType.Module => left % right,
+            BinaryType.Igual => left == right,
+            BinaryType.Distinto => left != right,
+            BinaryType.MayorQue => left > right,
+            BinaryType.MenorQue => left < right,
+            BinaryType.MayorIgual => left >= right,
+            BinaryType.MenorIgual => left <= right,
             _ => throw new InvalidOperationException(),
         };
     }

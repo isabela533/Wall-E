@@ -13,9 +13,11 @@ using Compiler.Tokenizador;
 using Avalonia.Media.Imaging;
 using System.IO;
 using System.Collections.Generic;
+using Compiler.Language;
 namespace Visual;
 public partial class MainWindow : Window, IPaint
 {
+    #region prop
     public Border[,] Map;
     private ControlerMethods? controler;
     private Image WalleImage;
@@ -28,7 +30,7 @@ public partial class MainWindow : Window, IPaint
         get { return _wallePoss; }
         set { _wallePoss = value; }
     }
-
+    #endregion
     public MainWindow()
     {
         InitializeComponent();
@@ -86,6 +88,8 @@ public partial class MainWindow : Window, IPaint
     public void PaintCell(int x, int y, int size)
     {
         if (!IsValidPosition(x, y)) throw new IndexOutOfRangeException();
+        if (Brush == Brushes.Transparent)
+            return;
         var cor = (size - 1) / 2;
         for (int i = 0; i < size; i++)
         {
@@ -100,7 +104,7 @@ public partial class MainWindow : Window, IPaint
 
     public IBrush? GetColorBrush(string color)
     {
-        var colorBrush = color[1..^1].ToLowerInvariant() switch
+        return color[1..^1].ToLowerInvariant() switch
         {
             "red" => Brushes.Red,
             "blue" => Brushes.Blue,
@@ -111,11 +115,17 @@ public partial class MainWindow : Window, IPaint
             "black" => Brushes.Black,
             "white" => Brushes.White,
             "transparent" => Brushes.Transparent,
-            _ => null,
+            _ => null
         };
+    }
 
-        Brush = colorBrush ?? Brush;
-        return colorBrush;
+    public IBrush? SetColorBrush(string color)
+    {
+        var colorBrush = GetColorBrush(color);
+        if (colorBrush == null)
+            throw new ArgumentException("Color is not valid");
+        Brush = colorBrush;
+        return Brush;
     }
 
     public int GetNewSizeBrush(int k)
@@ -262,14 +272,19 @@ public partial class MainWindow : Window, IPaint
     {
         ClearCanvas();
         var parser = new Parser();
-        var context = new Context(controler);  
+        var context = new Context(controler);
 
         string code = Editor.Text;
         var tokenizador = new Tokenizador();
         Token[] tokens = tokenizador.Tokenizar(code);
         try
         {
-            var ast = parser.Parse(tokens);
+            // TODO: cambiar a ingles
+            var ast = parser.Parse(tokens) as BlockExpression;
+            if (ast?.Lines.Count == 0 
+                || ast?.Lines[0] is not CallableAction action 
+                || !action.Name.Equals("spawn", StringComparison.InvariantCultureIgnoreCase))
+                throw new InvalidProgramException("Falta el spawn");
             ast.Accept(context);
         }
         catch (Exception ex)

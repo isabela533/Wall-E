@@ -28,5 +28,4 @@ public class CallableAction(string name, IExpression[] parameters) : IInstructio
         ValueType[] paramValues = [.. Params.Select(x => x.Accept(context))];
         context.ExecuteAction(Name, paramValues);
     }
-
 }

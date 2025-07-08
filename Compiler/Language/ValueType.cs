@@ -32,7 +32,7 @@ public class ValueType(TokenType kind, object value)
     {
         if (a.Kind != b.Kind)
             throw new InvalidOperationException("Unsupported operation for the given types");
-        return new ValueType(TokenType.Num, Math.Pow((int)a.Value, (int)b.Value));
+        return new ValueType(TokenType.Num, (int)Math.Pow((int)a.Value, (int)b.Value));
     }
 
     public static ValueType operator /(ValueType a, ValueType b)
@@ -128,8 +128,7 @@ public class ValueType(TokenType kind, object value)
             throw new InvalidOperationException("Unsupported operation for the given types");
         return new ValueType(TokenType.Boolean, (int)a.Value <= (int)b.Value);
     }
-    #endregion
-    //0 referencesÑ es lo mismo que el tryparse 
+    #endregion 
     public static ValueType Parse(string s, TokenType type)
     {
         return type switch
@@ -149,7 +148,7 @@ public class ValueType(TokenType kind, object value)
             TokenType.Boolean => bool.TryParse(s, out bool @bool) ? @bool : null,
             TokenType.Num => int.TryParse(s, out int num) ? num : null,
             TokenType.String => s,
-            _ => throw new NotImplementedException()
+            _ => null
         };
         if (value is null)
             return false;

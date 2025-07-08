@@ -11,6 +11,9 @@ public class Variable(string name) : IExpression
 
     public ValueType Accept(Context context)
     {
-        return context.Variables[Name];
+        // TODO: cambiar a ingles
+        if (!context.Variables.TryGetValue(Name, out var value))
+            throw new KeyNotFoundException($"No existe variable de nombre {Name}");
+        return value;
     }
 }

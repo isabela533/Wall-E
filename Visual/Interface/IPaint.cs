@@ -13,6 +13,7 @@ public interface IPaint
     bool IsValidPosition(int x, int y);
     IBrush GetColorAt(int x,int y);
     IBrush? GetColorBrush(string color);
+    IBrush? SetColorBrush(string color);
     int GetNewSizeBrush(int k);
     int GetCanvasSize();
 }

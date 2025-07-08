@@ -9,6 +9,7 @@ public static class TokenExtension
     {
         TokenType.Suma => BinaryType.Addition,
         TokenType.Mult => BinaryType.Multiplication,
+        TokenType.Module => BinaryType.Module,
         TokenType.Pow => BinaryType.Potencia,
         TokenType.Resta => BinaryType.Diferencia,
         TokenType.Div => BinaryType.Division,

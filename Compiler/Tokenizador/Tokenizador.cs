@@ -8,7 +8,7 @@ public class Tokenizador
 
     public static readonly string id = @"[a-zA-Z][a-zA-Z0-9_]*";
     public static readonly string label = $@"({id})(\r?\n)";
-    public static readonly string num = $@"-?\d+|{id}-\d+";
+    public static readonly string num = @"-?\d+";
     public static readonly string str = @"""[^""]*""";
     public static readonly string otherOp = @"\*\*";
     public static readonly string comp = @"[<>=\!]=";
@@ -41,9 +41,22 @@ public class Tokenizador
                 continue;
             }
             var value = match.Value;
-            var type = GetTokenType(value);
+            var type = GetTokenType(value, characters);
             if (value[0] != ' ')
+            {
+                var end = false;
+                if (type is TokenType.Identificador)
+                {
+                    end = value[^1] == '\n';
+                    value = value.TrimEnd();
+                }
                 tokens.Add(new Token(value, type, line, characters));
+                if (end)
+                {
+                    type = TokenType.EndLine;
+                    tokens.Add(new Token("\r\n", type, ++line, 0));
+                }
+            }
             characters += match.Length;
             index += match.Length;
             if (type != TokenType.EndLine)
@@ -52,11 +65,14 @@ public class Tokenizador
             characters = 0;
         }
 
-        tokens.Add(new Token("$", TokenType.EndOfFile, line + 1, 0));
+        if (tokens.Count > 0 && tokens[^1].Col == 0 && tokens[^1].Type == TokenType.Identificador)
+            tokens[^1].Type = TokenType.Label;
+        tokens.Add(new Token("\r\n", TokenType.EndLine, ++line, 0));
+        tokens.Add(new Token("$", TokenType.EndOfFile, ++line, 0));
         return [.. tokens];
     }
 
-    private static TokenType GetTokenType(string value)
+    private static TokenType GetTokenType(string value, int col)
     {
         switch (value)
         {
@@ -109,13 +125,13 @@ public class Tokenizador
                 return TokenType.GoTo;
         }
 
-        if (Regex.IsMatch(value, label))
+        if (Regex.IsMatch(value, label) && col == 0)
             return TokenType.Label;
         if (value[^1] == '"' && value[0] == '"')
             return TokenType.String;
         if (bool.TryParse(value, out bool _))
             return TokenType.Boolean;
-        if (Regex.IsMatch(value, num))
+        if (Regex.IsMatch(value, @"^-?\d+$"))
             return TokenType.Num;
         return TokenType.Identificador;
     }
